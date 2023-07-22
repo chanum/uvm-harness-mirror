@@ -1,0 +1,19 @@
++comment=There_is_no_true_comment_syntax_for_-f/-F_files
++comment=but_we_can_hide_comment_text_from_the_parser
++comment=in_the_string_value_of_an_unused_plusarg
+
++verilab_chip=Lumpy_stub_no_harness +define+__verilab_chip__+__verilab_chip_stub_lumpy__+__verilab_chip_harness__
+  +verilab_pads=Stub_no_harness +define+__verilab_pads__+__verilab_pads_harness__
+  +verilab_core=Lumpy_stub_no_harness +define+__verilab_core__+__verilab_core_stub_lumpy__+__verilab_core_harness__
+    +proc_subsys=Lumpy_stub_no_harness +define+__proc_subsys__+__proc_subsys_stub_lumpy__+__proc_subsys_harness__
+      +cpu=Stub_no_harness +define+__cpu__+__cpu_harness__
+      +dma=Stub_no_harness +define+__dma__+__dma_harness__
+      +mem=Stub_no_harness +define+__mem__+__mem_harness__
+      +ahb_fabric=Real_module_with_harness
+        +arb=Real_module_with_harness
+    +ahb2apb=Stub_no_harness +define+__ahb2apb__+__ahb2apb_harness__
+    +periph_subsys=Stub_no_harness +define+__periph_subsys__+__periph_subsys_harness__
+      +apb_fabric=Removed_completely +define+__apb_fabric__+__apb_fabric_stub__
+        +arb=Real_module_with_harness_for_ahb_fabric_only
+      +i2c=Removed_completely +define+__i2c__+__i2c_stub__
+      +gpio=Removed_completely +define+__gpio__+__gpio_stub__

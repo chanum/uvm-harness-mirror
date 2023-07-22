@@ -1,0 +1,108 @@
+// Copyright 2017 Verilab Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+`ifndef __verilab_pads_env__
+`define __verilab_pads_env__
+
+class verilab_pads_env extends uvm_env;
+
+  clk_rst_agent clk_rst_agents[string];
+  //gpioz_agent gpioz_agents[string];
+  //i2cz_agent i2cz_agents[string];
+  gpio_agent gpio_agents[string];
+  i2c_agent i2c_agents[string];
+
+  verilab_pads_env_cfg cfg;
+  verilab_pads_pharness_base harness;
+  verilab_pads_vseqr vseqr;
+
+  `uvm_component_utils_begin(verilab_pads_env)
+  `uvm_component_utils_end
+
+  function new(string name = "verilab_pads_env", uvm_component parent = null);
+    super.new(name, parent);
+  endfunction
+
+  virtual function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
+
+    if (cfg.role != BLIND) begin
+      if (! uvm_config_db#(verilab_pads_pharness_base)::get(this, "", "harness", harness)) begin
+        `uvm_fatal("build_phase", "No verilab_pads_pharness_base 'harness' in uvm_config_db")
+      end
+      vseqr = verilab_pads_vseqr::type_id::create("vseqr", this);
+
+      clk_rst_agents["clk_rst_if"] = clk_rst_agent::type_id::create("clk_rst_if", this);
+      if (! uvm_config_db#(virtual clk_rst_interface)::get(this, "", "clk_rst_if", clk_rst_agents["clk_rst_if"].vif)) begin
+        `uvm_fatal("build_phase", "No virtual clk_rst_interface 'clk_rst_if' in uvm_config_db")
+      end
+      clk_rst_agents["clk_rst_if"].cfg = clk_rst_vip_cfg::type_id::create("clk_rst_if_cfg");
+
+      //gpioz_agents["gpioz_if"] = gpioz_agent::type_id::create("gpioz_if", this);
+      //if (! uvm_config_db#(virtual gpioz_interface)::get(this, "", "gpioz_if", gpioz_agents["gpioz_if"].vif)) begin
+      //  `uvm_fatal("build_phase", "No virtual gpioz_interface 'gpioz_if' in uvm_config_db")
+      //end
+      //gpioz_agents["gpioz_if"].cfg = gpioz_vip_cfg::type_id::create("gpioz_if_cfg");
+
+      //i2cz_agents["i2cz_if"] = i2cz_agent::type_id::create("i2cz_if", this);
+      //if (! uvm_config_db#(virtual i2cz_interface)::get(this, "", "i2cz_if", i2cz_agents["i2cz_if"].vif)) begin
+      //  `uvm_fatal("build_phase", "No virtual i2cz_interface 'i2cz_if' in uvm_config_db")
+      //end
+      //i2cz_agents["i2cz_if"].cfg = i2cz_vip_cfg::type_id::create("i2cz_if_cfg");
+
+      clk_rst_agents["core_clk_rst_if"] = clk_rst_agent::type_id::create("core_clk_rst_if", this);
+      if (! uvm_config_db#(virtual clk_rst_interface)::get(this, "", "core_clk_rst_if", clk_rst_agents["core_clk_rst_if"].vif)) begin
+        `uvm_fatal("build_phase", "No virtual clk_rst_interface 'core_clk_rst_if' in uvm_config_db")
+      end
+      clk_rst_agents["core_clk_rst_if"].cfg = clk_rst_vip_cfg::type_id::create("core_clk_rst_if_cfg");
+
+      gpio_agents["gpio_if"] = gpio_agent::type_id::create("gpio_if", this);
+      if (! uvm_config_db#(virtual gpio_interface)::get(this, "", "gpio_if", gpio_agents["gpio_if"].vif)) begin
+        `uvm_fatal("build_phase", "No virtual gpio_interface 'gpio_if' in uvm_config_db")
+      end
+      gpio_agents["gpio_if"].cfg = gpio_vip_cfg::type_id::create("gpio_if_cfg");
+
+      i2c_agents["i2c_if"] = i2c_agent::type_id::create("i2c_if", this);
+      if (! uvm_config_db#(virtual i2c_interface)::get(this, "", "i2c_if", i2c_agents["i2c_if"].vif)) begin
+        `uvm_fatal("build_phase", "No virtual i2c_interface 'i2c_if' in uvm_config_db")
+      end
+      i2c_agents["i2c_if"].cfg = i2c_vip_cfg::type_id::create("i2c_if_cfg");
+
+      if (cfg.role == ACTING_AS) begin
+        clk_rst_agents["core_clk_rst_if"].is_active = UVM_ACTIVE; clk_rst_agents["core_clk_rst_if"].cfg.freq = cfg.clk_freq;
+        //gpioz_agents["gpioz_if"].is_active = UVM_ACTIVE; gpioz_agents["gpioz_if"].cfg.role = gpio_pkg::REQUESTER;
+        gpio_agents["gpio_if"].is_active = UVM_ACTIVE; gpio_agents["gpio_if"].cfg.role = gpio_pkg::RESPONDER;
+        //i2cz_agents["i2cz_if"].is_active = UVM_ACTIVE;
+        i2c_agents["i2c_if"].is_active = UVM_ACTIVE;
+      end
+      else if (cfg.role == ACTING_ON) begin
+        clk_rst_agents["clk_rst_if"].is_active = UVM_ACTIVE; clk_rst_agents["clk_rst_if"].cfg.freq = cfg.clk_freq;
+        //gpioz_agents["gpioz_if"].is_active = UVM_ACTIVE; gpioz_agents["gpioz_if"].cfg.role = gpio_pkg::RESPONDER;
+        gpio_agents["gpio_if"].is_active = UVM_ACTIVE; gpio_agents["gpio_if"].cfg.role = gpio_pkg::REQUESTER;
+        //i2cz_agents["i2cz_if"].is_active = UVM_ACTIVE;
+        i2c_agents["i2c_if"].is_active = UVM_ACTIVE;
+      end
+    end
+  endfunction
+
+  virtual function void connect_phase(uvm_phase phase);
+    super.connect_phase(phase);
+  endfunction
+
+  virtual task run_phase(uvm_phase phase);
+  endtask
+endclass
+
+`endif
+
